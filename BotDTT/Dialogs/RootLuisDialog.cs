@@ -16,29 +16,20 @@
     [Serializable]
     public class RootLuisDialog : LuisDialog<object>
     {
-        private const string EntityGeographyCity = "builtin.geography.city";
-
-        private const string EntityHotelName = "Hotel";
-
-        private const string EntityAirportCode = "AirportCode";
-
-        private IList<string> titleOptions = new List<string> { "“Very stylish, great stay, great staff”", "“good hotel awful meals”", "“Need more attention to little things”", "“Lovely small hotel ideally situated to explore the area.”", "“Positive surprise”", "“Beautiful suite and resort”" };
-
 
         [LuisIntent("New")]
         public async Task New(IDialogContext context, LuisResult result)
         {
             // Duplicate logic, for a teachable moment on Scorables.  
-            await context.PostAsync("Hello from LUIS!  I am a Photo Organization Bot.  I can search your photos, share your photos on Twitter, and order prints of your photos.  You can ask me things like 'find pictures of food'.");
+            await context.PostAsync("This is a platform tha using LUIS services!  I am a Bot finder.  I can search your hotel, You can ask me things like 'search hotels near LAX airport'.");
 
             //context.Wait(this.MessageReceived);
 
             //Launch help dialog with button menu
-            List<string> choices = new List<string>(new string[] { "Search Pictures", "Share Picture", "Order Prints" });
+            List<string> choices = new List<string>(new string[] { "Search Hotels", "Show Hotels Reviews", "Help" , "Nothing"});
             PromptDialog.Choice<string>(context, ResumeAfterChoice,
                 new PromptOptions<string>("How can I help you?", options: choices));
         }
-
 
 
         private async Task ResumeAfterChoice(IDialogContext context, IAwaitable<string> result)
@@ -47,15 +38,19 @@
 
             switch (choice)
             {
-                case "Search Pictures":
-                    PromptDialog.Text(context, ResumeAfterSearchTopicClarification,
-                        "What kind of picture do you want to search for?");
+                case "Search Hotels":
+                    await Search(context, null, null);
                     break;
-                case "Share Picture":
-                    await SharePic(context, null);
+                case "Show Hotels Reviews":
+                    await context.PostAsync("Finding your Hotels");
+                    await Reviews(context, null);
                     break;
-                case "Order Prints":
-                    await OrderPic(context, null);
+                case "Help":
+                    await context.PostAsync("Finding your help...");
+                    await Help(context, null);
+                    break;
+                case "Nothing":
+                    await context.PostAsync("Thanks for your opinion...");
                     break;
                 default:
                     await context.PostAsync("I'm sorry. I didn't understand you.");
@@ -63,11 +58,7 @@
             }
         }
 
-        private async Task ResumeAfterSearchTopicClarification(IDialogContext context, IAwaitable<string> result)
-        {
-            string searchTerm = await result;
-            context.Call(new SearchDialog(searchTerm), ResumeAfterSearchDialog);
-        }
+      
 
         [LuisIntent("OrderPic")]
         [ScorableGroup(1)]
@@ -121,6 +112,8 @@
         [LuisIntent("SearchHotels")]
         public async Task Search(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
+            if (activity == null)
+                await context.PostAsync($"Sorry, I did not understand , Type 'help' if you need assistance.");
             var message = await activity;
             await context.PostAsync($"Welcome to the Hotels finder! We are analyzing your message: '{message.Text}'...");
 
@@ -291,5 +284,14 @@
 
             return hotels;
         }
+
+        private const string EntityGeographyCity = "builtin.geography.city";
+
+        private const string EntityHotelName = "Hotel";
+
+        private const string EntityAirportCode = "AirportCode";
+
+        private IList<string> titleOptions = new List<string> { "“Very stylish, great stay, great staff”", "“good hotel awful meals”", "“Need more attention to little things”", "“Lovely small hotel ideally situated to explore the area.”", "“Positive surprise”", "“Beautiful suite and resort”" };
+
     }
 }
