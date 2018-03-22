@@ -23,9 +23,21 @@ namespace Bot_Application.Dialogs
             int length = (activity.Text ?? string.Empty).Length;
 
             // return our reply to the user
-            await context.PostAsync($"You sent {activity.Text} which was {length} characters");
+            //await context.PostAsync($"You sent {activity.Text} which was {length} characters");
+            await context.PostAsync(ChatBot(activity.Text.ToUpper()));
 
             context.Wait(MessageReceivedAsync);
+        }
+
+        private string ChatBot(string text)
+        {
+            string result = "";
+            if (text.Contains("Holaa"))
+            {
+                return "Un saludo, En que podemos colaborarle?";
+            }
+            result += "\n Podemos colaborale en algo más?";
+            return result;
         }
     }
 }
